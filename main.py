@@ -1,13 +1,26 @@
-# insta-bot
 import os
 import re
 import tempfile
 import asyncio
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import yt_dlp
 
 BOT_TOKEN = os.getenv("8880124550:AAHvbLVGZVA2z8NbIxvNHofjxf5m8IMnTSo")
+
+# سرور ساختگی برای فعال ماندن روی پلن رایگان Render
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is online and running!")
+
+def start_health_check_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
+    server.serve_forever()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -71,11 +84,14 @@ def main():
     if not BOT_TOKEN:
         raise ValueError("BOT_TOKEN is not set in environment variables.")
 
+    # اجرای وب‌سرور در پس‌زمینه
+    threading.Thread(target=start_health_check_server, daemon=True).start()
+
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    print("Bot is running...")
+    print("Bot is running on Free Web Service...")
     app.run_polling()
 
 if __name__ == "__main__":
