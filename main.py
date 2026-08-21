@@ -8,14 +8,14 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import yt_dlp
 
-BOT_TOKEN = os.getenv("8880124550:AAHvbLVGZVA2z8NbIxvNHofjxf5m8IMnTSo")
+# توکن رباتت رو مستقیماً اینجا بین دوتا " بنویس:
+BOT_TOKEN = "8880124550:AAHvbLVGZVA2z8NbIxvNHofjxf5m8IMnTSo"
 
-# سرور ساختگی برای فعال ماندن روی پلن رایگان Render
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b"Bot is online and running!")
+        self.wfile.write(b"OK")
 
 def start_health_check_server():
     port = int(os.environ.get("PORT", 8080))
@@ -24,7 +24,7 @@ def start_health_check_server():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "👋 سلام! لینک ریلز یا پست اینستاگرام رو بفرست تا ویدیوش رو برات مستقیم بفرستم."
+        "👋 سلام! لینک ریلز یا پست اینستاگرام رو بفرست تا ویدیوش رو برات بفرستم."
     )
 
 def download_instagram_video(url: str, output_path: str) -> bool:
@@ -48,7 +48,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     insta_match = re.search(r'(https?://(?:www\.)?instagram\.com/(?:p|reel|tv)/[a-zA-Z0-9_\-]+)', text)
-    
     if not insta_match:
         await update.message.reply_text("❌ لطفاً یک لینک معتبر از ریلز یا پست اینستاگرام ارسال کنید.")
         return
@@ -61,7 +60,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         success = await asyncio.to_thread(download_instagram_video, url, temp_filename)
-        
         if success and os.path.exists(temp_filename) and os.path.getsize(temp_filename) > 0:
             await status_msg.edit_text("🚀 در حال آپلود ویدیو در تلگرام...")
             with open(temp_filename, 'rb') as video_file:
@@ -72,7 +70,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
             await status_msg.delete()
         else:
-            await status_msg.edit_text("❌ خطا در دانلود ویدیو. ممکن است پیج موردنظر خصوصی (Private) باشد.")
+            await status_msg.edit_text("❌ خطا در دانلود. ممکن است پیج خصوصی باشد.")
     except Exception as e:
         print(f"Error: {e}")
         await status_msg.edit_text("❌ مشکلی در ارسال ویدیو پیش آمد.")
@@ -81,17 +79,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             os.remove(temp_filename)
 
 def main():
-    if not BOT_TOKEN:
-        raise ValueError("BOT_TOKEN is not set in environment variables.")
-
-    # اجرای وب‌سرور در پس‌زمینه
     threading.Thread(target=start_health_check_server, daemon=True).start()
-
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-    print("Bot is running on Free Web Service...")
+    print("Bot is successfully running!")
     app.run_polling()
 
 if __name__ == "__main__":
