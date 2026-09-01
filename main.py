@@ -8,6 +8,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import yt_dlp
 
+# توکن جدید تلگرام
 TOKEN = "8880124550:AAG75YAujlTDOuoZE8qQvyl0mg76IX-w7MA"
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
@@ -15,6 +16,8 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b"OK")
+    def log_message(self, format, *args):
+        pass
 
 def start_health_check_server():
     port = int(os.environ.get("PORT", 8080))
@@ -78,10 +81,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             os.remove(temp_filename)
 
 def main():
+    # راه‌اندازی وب‌سرور برای زنده ماندن ربات در پلن رایگان
     threading.Thread(target=start_health_check_server, daemon=True).start()
+
+    # رفع خطای Event Loop در پایتون جدید
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
     print("Bot is successfully running!")
     app.run_polling()
 
