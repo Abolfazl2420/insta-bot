@@ -8,7 +8,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import yt_dlp
 
-TOKEN = "8880124550:AAHvbLVGZVA2z8NbIxvNHofjxf5m8IMnTSo"
+TOKEN = "8880124550:AAG75YAujlTDOuoZE8qQvyl0mg76IX-w7MA"
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
